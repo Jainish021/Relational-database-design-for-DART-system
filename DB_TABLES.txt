@@ -1,0 +1,424 @@
+create database DB_Project_Mc;
+use DB_Project_Mc;
+SET SQL_SAFE_UPDATES = 0;
+
+create table PERSON(
+Person_id varchar(10) PRIMARY KEY constraint valid_person_id check (REGEXP_LIKE(Person_id, '^P.[0-9].[0-9].[0-9]')),
+First_name varchar(20) NOT NULL,
+Middle_name varchar(20) DEFAULT NULL,
+Last_name varchar(20) NOT NULL,
+Zipcode varchar(10) NOT NULL,
+Street_name varchar(30) NOT NULL,
+City varchar(20) NOT NULL,
+State varchar(20) NOT NULL,
+Gender varchar(10) NOT NULL,
+Date_of_birth date NOT NULL,
+Cur_date date default(current_date),
+KEY fk_zipcode_idx(Zipcode),
+KEY fk_person_id1_idx(Person_id));
+
+
+create table BUS(
+Plate_number varchar(10) PRIMARY KEY,
+Employee_id varchar(10) NOT NULL,
+Unique_id varchar(4) NOT NULL,
+Bus_number varchar(10) NOT NULL,
+No_of_seats int NOT NULL,
+Terminal_id varchar(2) NOT NULL,
+KEY fk_plate_number_idx(Plate_number));
+
+create table TERMINAL(
+Plate_number varchar(10),
+Terminal_id varchar(3),
+Location varchar(20) NOT NULL,
+T_Date date NOT NULL,
+T_Time time NOT NULL,
+PRIMARY KEY(Plate_number, Terminal_id),
+KEY fk_terminal_id_idx(Terminal_id));
+
+create table TIME_TABLE(
+Unique_id varchar(4) PRIMARY KEY,
+W_day varchar(9) NOT NULL,
+Start_time time NOT NULL,
+End_time time NOT NULL,
+Bus_interval varchar(10) NOT NULL,
+KEY fk_unique_id_idx(Unique_id));
+
+create table ROUTE(
+Route_number varchar(10) PRIMARY KEY,
+Plate_number varchar(10) NOT NULL,
+Bus_stop_id varchar(10) NOT NULL);
+
+create table BUS_STOP(
+Bus_stop_id varchar(10) PRIMARY KEY,
+Bus_stop_name varchar(20) NOT NULL,
+KEY fk_bus_stop_id_idx(Bus_stop_id));
+
+create table DRIVEN(
+Employee_id varchar(10),
+Plate_number varchar(10),
+PRIMARY KEY(Employee_id, Plate_number));
+
+create table TAKES(
+Person_id varchar(10),
+Plate_number varchar(10),
+PRIMARY KEY(Person_id, Plate_number));
+
+create table PERSON_PHONE_NO(
+Person_id varchar(10),
+Phone_no varchar(15),
+PRIMARY KEY(Person_id, Phone_no));
+
+create table EMPLOYEE(
+Person_id varchar(10) NOT NULL,
+Employee_id varchar(10) PRIMARY KEY,
+Start_date date NOT NULL,
+KEY fk_person_id2_idx(Person_id),
+KEY fk_employee_id1_idx(Employee_id));
+
+create table EMP_PASSENGER(
+Person_id varchar(10) PRIMARY KEY,
+Passenger_id varchar(10) DEFAULT NULL);
+
+create table BUS_DRIVER(
+Employee_id varchar(10) PRIMARY KEY);
+
+create table TICKET_CHECKER(
+Employee_id varchar(10) PRIMARY KEY,
+KEY fk_employee_id2_idx(Employee_id));
+
+create table STAFF(
+Employee_id varchar(10) PRIMARY KEY);
+
+create table A_CLASS_PASSENGER(
+Person_id varchar(10) PRIMARY KEY,
+Passenger_id varchar(10) DEFAULT NULL,
+KEY fk_person_id3_idx(Person_id));
+
+create table A_STAR_PASSENGER(
+Passenger_id varchar(10) PRIMARY KEY,
+Guest_id varchar(10) DEFAULT NULL,
+KEY fk_passenger_id1_idx(Passenger_id));
+
+create table PASS(
+Pass_no varchar(10) PRIMARY KEY,
+Issue_date date NOT NULL,
+Person_id varchar(10) NOT NULL,
+KEY fk_pass_no_idx(Pass_no));
+
+create table BUYS(
+Person_id varchar(10),
+Ticket_id varchar(10),
+PRIMARY KEY(Person_id, Ticket_id));
+
+create table BUYS_PASS(
+Passenger_id varchar(10),
+Pass_no varchar(10),
+PRIMARY KEY(Passenger_id, Pass_no));
+
+create table GUEST_INFO_LOG(
+Passenger_id varchar(10),
+Guest_id varchar(10),
+Guest_name varchar(20),
+Guest_address varchar(50) NOT NULL,
+Guest_contact_information varchar(15),
+PRIMARY KEY(Passenger_id, Guest_id),
+KEY fk_guest_id_idx(Guest_id));
+
+create table TRAVEL_CARD(
+Passenger_id varchar(10),
+Card_id varchar(10),
+Date_of_issue date NOT NULL,
+Expiry_date date NOT NULL,
+PRIMARY KEY(Passenger_id, Card_id),
+KEY fk_passenger_id2_idx(Passenger_id),
+KEY fk_card_id_idx(Card_id));
+
+create table CAN_GET(
+Passenger_id varchar(10),
+Card_id varchar(10),
+Promotional_id varchar(10),
+PRIMARY KEY(Passenger_id, Card_id, Promotional_id));
+
+
+create table PD1(
+Passenger_id varchar(10),
+Card_id varchar(10),
+Promotional_id varchar(10),
+PRIMARY KEY(Passenger_id, Card_id, Promotional_id),
+KEY fk_promotional_id_idx(Promotional_id));
+
+create table PD2(
+Promotional_id varchar(10),
+Promotion_description varchar(30) DEFAULT NULL,
+PRIMARY KEY(Promotional_id));
+
+
+create table ISSUES(
+Employee_id varchar(10),
+Ticket_id varchar(10),
+PRIMARY KEY(Employee_id, Ticket_id));
+
+create table ISSUES_PASS(
+Employee_id varchar(10),
+Pass_no varchar(10),
+PRIMARY KEY(Employee_id, Pass_no));
+
+create table TICKET(
+Ticket_id varchar(10) PRIMARY KEY,
+Plate_number varchar(10) NOT NULL,
+Seat_no varchar(3) NOT NULL,
+Price DECIMAL(10,2) NOT NULL,
+KEY fk_ticket_id_idx(Ticket_id));
+
+create table PAYMENT_INFO(
+Payment_id varchar(10) PRIMARY KEY,
+Method varchar(10) NOT NULL,
+Amount DECIMAL(10,2) NOT NULL,
+P_Time time NOT NULL,
+Ticket_id varchar(10) NOT NULL);
+
+alter table Person 
+add constraint age_check check (FLOOR(datediff(Cur_date, Date_of_birth)/365) > 16);
+
+alter table BUS
+ADD CONSTRAINT fk_unique_id
+FOREIGN KEY (Unique_id)
+REFERENCES TIME_TABLE(Unique_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_terminal_id
+FOREIGN KEY (Terminal_id)
+REFERENCES TERMINAL(Terminal_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_employee_id1
+FOREIGN KEY (Employee_id)
+REFERENCES TICKET_CHECKER(Employee_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table TERMINAL
+ADD CONSTRAINT fk_plate_number1
+FOREIGN KEY (Plate_number)
+REFERENCES BUS(Plate_number)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table ROUTE
+ADD CONSTRAINT fk_bus_stop_id
+FOREIGN KEY (Bus_stop_id)
+REFERENCES BUS_STOP(Bus_stop_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_plate_number2
+FOREIGN KEY (Plate_number)
+REFERENCES BUS(Plate_number)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table DRIVEN
+ADD CONSTRAINT fk_employee_id2
+FOREIGN KEY (Employee_id)
+REFERENCES EMPLOYEE(Employee_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_plate_number3
+FOREIGN KEY (Plate_number)
+REFERENCES BUS(Plate_number)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table TAKES
+ADD CONSTRAINT fk_person_id1
+FOREIGN KEY (Person_id)
+REFERENCES PERSON(Person_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_plate_number4
+FOREIGN KEY (Plate_number)
+REFERENCES BUS(Plate_number)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table PERSON_PHONE_NO
+ADD CONSTRAINT fk_person_id2
+FOREIGN KEY (Person_id)
+REFERENCES PERSON(Person_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table EMPLOYEE
+ADD CONSTRAINT fk_person_id3
+FOREIGN KEY (Person_id)
+REFERENCES PERSON(Person_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table EMP_PASSENGER
+ADD CONSTRAINT fk_person_id4
+FOREIGN KEY (Person_id)
+REFERENCES EMPLOYEE(Person_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_passenger_id1
+FOREIGN KEY (Passenger_id)
+REFERENCES A_STAR_PASSENGER(Passenger_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table BUS_DRIVER
+ADD CONSTRAINT fk_employee_id3
+FOREIGN KEY (Employee_id)
+REFERENCES EMPLOYEE(Employee_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table TICKET_CHECKER
+ADD CONSTRAINT fk_employee_id4
+FOREIGN KEY (Employee_id)
+REFERENCES EMPLOYEE(Employee_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table STAFF
+ADD CONSTRAINT fk_employee_id5
+FOREIGN KEY (Employee_id)
+REFERENCES EMPLOYEE(Employee_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table A_CLASS_PASSENGER
+ADD CONSTRAINT fk_passenger_id2
+FOREIGN KEY (Passenger_id)
+REFERENCES A_STAR_PASSENGER(Passenger_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table A_STAR_PASSENGER
+ADD CONSTRAINT fk_guest_id
+FOREIGN KEY (Guest_id)
+REFERENCES GUEST_INFO_LOG(Guest_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table PASS
+ADD CONSTRAINT fk_person_id5
+FOREIGN KEY (Person_id)
+REFERENCES A_CLASS_PASSENGER(Person_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table BUYS
+ADD CONSTRAINT fk_person_id6
+FOREIGN KEY (Person_id)
+REFERENCES A_CLASS_PASSENGER(Person_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_ticket_id1
+FOREIGN KEY (Ticket_id)
+REFERENCES TICKET(Ticket_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table BUYS_PASS
+ADD CONSTRAINT fk_pass_no1
+FOREIGN KEY (Pass_no)
+REFERENCES PASS(Pass_no)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_passenger_id3
+FOREIGN KEY (Passenger_id)
+REFERENCES A_STAR_PASSENGER(Passenger_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table GUEST_INFO_LOG
+ADD CONSTRAINT fk_passenger_id4
+FOREIGN KEY (Passenger_id)
+REFERENCES A_STAR_PASSENGER(Passenger_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table TRAVEL_CARD
+ADD CONSTRAINT fk_passenger_id5
+FOREIGN KEY (Passenger_id)
+REFERENCES A_STAR_PASSENGER(Passenger_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table CAN_GET
+ADD CONSTRAINT fk_passenger_id6
+FOREIGN KEY (Passenger_id)
+REFERENCES TRAVEL_CARD(Passenger_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_card_id1
+FOREIGN KEY (Card_id)
+REFERENCES TRAVEL_CARD(Card_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_promotional_id1
+FOREIGN KEY (Promotional_id)
+REFERENCES PD1(Promotional_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table PD1
+ADD CONSTRAINT fk_passenger_id7
+FOREIGN KEY (Passenger_id)
+REFERENCES TRAVEL_CARD(Passenger_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_card_id2
+FOREIGN KEY (Card_id)
+REFERENCES TRAVEL_CARD(Card_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table PD2
+ADD CONSTRAINT fk_promotional_id2
+FOREIGN KEY (Promotional_id)
+REFERENCES PD1(Promotional_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table ISSUES
+ADD CONSTRAINT fk_employee_id6
+FOREIGN KEY (Employee_id)
+REFERENCES STAFF(Employee_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_ticket_id2
+FOREIGN KEY (Ticket_id)
+REFERENCES TICKET(Ticket_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table ISSUES_PASS
+ADD CONSTRAINT fk_pass_no2
+FOREIGN KEY (Pass_no)
+REFERENCES PASS(Pass_no)
+ON DELETE CASCADE
+ON UPDATE CASCADE,
+ADD CONSTRAINT fk_employee_id7
+FOREIGN KEY (Employee_id)
+REFERENCES STAFF(Employee_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table TICKET
+ADD CONSTRAINT fk_plate_number5
+FOREIGN KEY (Plate_number)
+REFERENCES BUS(Plate_number)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+alter table PAYMENT_INFO
+ADD CONSTRAINT fk_ticket_id3
+FOREIGN KEY (Ticket_id)
+REFERENCES TICKET(Ticket_id)
+ON DELETE CASCADE
+ON UPDATE CASCADE;
+
+show tables;
